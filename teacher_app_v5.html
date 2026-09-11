@@ -1,0 +1,475 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#1a1a18;--ink2:#5a5a52;--ink3:#9a9a8e;
+  --bg:#F7F4EE;--card:#ffffff;
+  --accent:#1C3A2F;--accent2:#2a5241;
+  --line:#e0ddd5;
+
+  --paid:       #0a8a3a;
+  --paid-bg:    #c8f5d8;
+  --paid-line:  #0a8a3a;
+
+  --unpaid:     #cc1111;
+  --unpaid-bg:  #ffd0d0;
+  --unpaid-line:#cc1111;
+
+  --pre:        #c07000;
+  --pre-bg:     #fff0a0;
+  --pre-line:   #c07000;
+
+  --partial:    #1a55cc;
+  --partial-bg: #d0e0ff;
+  --partial-line:#1a55cc;
+}
+.app{font-family:'Georgia',serif;background:var(--bg);max-width:420px}
+.header{background:var(--accent);padding:16px 16px 14px}
+.app-title{font-family:'Playfair Display',Georgia,serif;font-size:20px;font-weight:400;color:#fff}
+.month-sub{font-family:system-ui,sans-serif;font-size:11px;color:rgba(255,255,255,0.6);margin-top:2px}
+.tabs{display:flex;background:#fff;border-bottom:2px solid var(--line)}
+.tab{flex:1;padding:11px 6px;font-family:system-ui,sans-serif;font-size:12px;letter-spacing:0.03em;color:var(--ink2);background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;transition:all 0.15s}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+.tab:hover:not(.active){color:var(--ink)}
+
+.view{display:none;padding:14px 14px 20px}
+.view.active{display:block}
+
+.stats-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:16px}
+.stat{background:var(--card);border:1px solid var(--line);padding:12px 14px}
+.stat-label{font-family:system-ui,sans-serif;font-size:10px;letter-spacing:0.05em;color:var(--ink3);margin-bottom:5px}
+.stat-value{font-family:'Playfair Display',Georgia,serif;font-size:22px;font-weight:400}
+.sv-earned{color:var(--paid)}
+.sv-pending{color:var(--unpaid)}
+.sv-neutral{color:var(--ink)}
+
+.day-strip{display:flex;gap:4px;margin-bottom:12px;overflow-x:auto;padding-bottom:2px}
+.day-btn{flex-shrink:0;padding:5px 11px;font-family:system-ui,sans-serif;font-size:12px;border:1px solid var(--line);background:var(--card);cursor:pointer;color:var(--ink2);transition:all 0.12s}
+.day-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.day-btn.has{border-color:var(--accent);color:var(--accent);font-weight:600}
+
+.legend{display:flex;gap:14px;margin-bottom:10px;flex-wrap:wrap}
+.leg{display:flex;align-items:center;gap:6px;font-family:system-ui,sans-serif;font-size:11px;color:var(--ink2)}
+.leg-dot{width:12px;height:12px;border-radius:50%;border:1.5px solid rgba(0,0,0,0.15)}
+.ld-paid{background:var(--paid)}
+.ld-unpaid{background:var(--unpaid)}
+.ld-pre{background:#f0c000}
+
+.sec-label{font-family:system-ui,sans-serif;font-size:10px;letter-spacing:0.07em;color:var(--ink3);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+
+.slot-list{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.slot{display:flex;align-items:stretch;cursor:pointer;background:var(--card);overflow:hidden;transition:opacity 0.12s;border:1px solid rgba(0,0,0,0.08)}
+.slot:hover{opacity:0.88}
+.slot-bar{width:6px;flex-shrink:0}
+.slot.paid   .slot-bar{background:var(--paid)}
+.slot.unpaid .slot-bar{background:var(--unpaid)}
+.slot.prepaid .slot-bar{background:#f0c000}
+.slot.partial .slot-bar{background:var(--partial)}
+
+.slot.paid   {border-left:6px solid var(--paid)}
+.slot.unpaid {border-left:6px solid var(--unpaid)}
+.slot.prepaid{border-left:6px solid #f0c000}
+.slot.partial{border-left:6px solid var(--partial)}
+
+.slot-inner{display:flex;align-items:center;gap:10px;padding:10px 12px;flex:1}
+.slot-time{font-family:system-ui,sans-serif;font-size:12px;color:var(--ink2);min-width:40px;line-height:1.5}
+.slot-time span{display:block;font-size:10px;color:var(--ink3)}
+.slot-name{font-family:'Playfair Display',Georgia,serif;font-size:14px;color:var(--ink)}
+.slot-meta{font-family:system-ui,sans-serif;font-size:11px;color:var(--ink3);margin-top:1px}
+.slot-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;min-width:60px}
+.slot-rate{font-family:system-ui,sans-serif;font-size:12px;font-weight:700}
+.slot-status{font-size:10px;font-weight:600;padding:2px 6px;border-radius:3px}
+.slot.paid    .slot-rate{color:var(--paid)}
+.slot.unpaid  .slot-rate{color:var(--unpaid)}
+.slot.prepaid .slot-rate{color:#9a6000}
+.slot.partial .slot-rate{color:var(--partial)}
+.slot.paid    .slot-status{background:var(--paid-bg);color:var(--paid)}
+.slot.unpaid  .slot-status{background:var(--unpaid-bg);color:var(--unpaid)}
+.slot.prepaid .slot-status{background:#fff0a0;color:#9a6000}
+.slot.partial .slot-status{background:var(--partial-bg);color:var(--partial)}
+
+.student-list{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.sc{background:var(--card);padding:10px 14px;cursor:pointer;transition:opacity 0.12s;display:flex;align-items:center;gap:10px;border:1px solid rgba(0,0,0,0.08)}
+.sc:hover{opacity:0.85}
+.sc.paid   {border-left:6px solid var(--paid)}
+.sc.unpaid {border-left:6px solid var(--unpaid)}
+.sc.prepaid{border-left:6px solid #f0c000}
+.sc.partial{border-left:6px solid var(--partial)}
+.sc-body{flex:1}
+.sc-name{font-family:'Playfair Display',Georgia,serif;font-size:14px;color:var(--ink)}
+.sc-sub{font-family:system-ui,sans-serif;font-size:11px;color:var(--ink3);margin-top:2px}
+.sc-right{text-align:right;flex-shrink:0}
+.sc-badge{font-family:system-ui,sans-serif;font-size:10px;font-weight:700;padding:3px 9px;border-radius:3px;display:inline-block}
+.b-paid   {background:var(--paid-bg);color:var(--paid)}
+.b-unpaid {background:var(--unpaid-bg);color:var(--unpaid)}
+.b-prepaid{background:#fff0a0;color:#9a6000}
+.b-partial{background:var(--partial-bg);color:var(--partial)}
+.sc-amount{font-family:system-ui,sans-serif;font-size:10px;color:var(--ink3);margin-top:3px}
+
+.add-btn{width:100%;padding:10px;font-family:system-ui,sans-serif;font-size:12px;letter-spacing:0.04em;color:var(--accent);background:none;border:1px dashed var(--accent);cursor:pointer;transition:background 0.12s}
+.add-btn:hover{background:rgba(28,58,47,0.06)}
+
+.modal-wrap{display:none;position:relative;z-index:20}
+.modal-wrap.open{display:block}
+.modal-overlay{background:rgba(26,26,24,0.55);min-height:400px;display:flex;align-items:flex-start;padding:16px;justify-content:center}
+.modal{background:var(--card);border:1px solid var(--line);padding:20px;width:100%;max-width:360px}
+.modal-title{font-family:'Playfair Display',Georgia,serif;font-size:17px;color:var(--ink);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.field{margin-bottom:10px}
+.field label{font-family:system-ui,sans-serif;font-size:10px;letter-spacing:0.05em;color:var(--ink3);display:block;margin-bottom:4px}
+.field input,.field select{width:100%;padding:8px 10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-size:14px;font-family:Georgia,serif;outline:none;transition:border-color 0.12s}
+.field input:focus,.field select:focus{border-color:var(--accent)}
+.modal-actions{display:flex;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.btn{padding:9px 16px;font-family:system-ui,sans-serif;font-size:12px;letter-spacing:0.03em;cursor:pointer;border:1px solid var(--line);background:none;color:var(--ink2);flex:1;transition:all 0.12s}
+.btn:hover{background:var(--bg)}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-danger{color:var(--unpaid);border-color:var(--unpaid-line);flex:none}
+.btn-danger:hover{background:var(--unpaid-bg)}
+.btn-sm{padding:6px 12px;font-size:11px;flex:none}
+
+.dr-list{margin-bottom:10px}
+.dr{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.dr:last-child{border-bottom:none}
+.dr-label{font-family:system-ui,sans-serif;font-size:11px;color:var(--ink3)}
+.dr-val{font-family:Georgia,serif;font-size:13px;color:var(--ink)}
+.dr-val.green{color:var(--paid);font-weight:700}
+.dr-val.red{color:var(--unpaid);font-weight:700}
+.dr-val.gold{color:var(--pre);font-weight:700}
+.pay-row{display:flex;gap:8px}
+.pay-row input{flex:1}
+.hist-title{font-family:system-ui,sans-serif;font-size:10px;letter-spacing:0.06em;color:var(--ink3);margin:12px 0 6px;padding-top:10px;border-top:1px solid var(--line)}
+.hist-item{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--line);font-family:system-ui,sans-serif;font-size:11px}
+.hist-item:last-child{border-bottom:none}
+.hist-date{color:var(--ink3)}
+.hist-amt{color:var(--paid);font-weight:700}
+.err{font-family:system-ui,sans-serif;font-size:11px;color:var(--unpaid);min-height:15px;margin-top:4px}
+.empty{text-align:center;padding:24px 16px;font-family:system-ui,sans-serif;font-size:13px;color:var(--ink3);font-style:italic}
+</style>
+
+<div class="app">
+  <div class="header">
+    <div class="app-title">Журнал учителя</div>
+    <div class="month-sub" id="month-lbl"></div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('schedule')">Расписание</button>
+    <button class="tab" onclick="switchTab('payments')">Оплаты</button>
+    <button class="tab" onclick="switchTab('students')">Ученики</button>
+  </div>
+
+  <div id="view-schedule" class="view active">
+    <div class="day-strip" id="day-strip"></div>
+    <div class="legend">
+      <div class="leg"><div class="leg-dot ld-paid"></div>Оплачено</div>
+      <div class="leg"><div class="leg-dot ld-unpaid"></div>Не оплачено</div>
+      <div class="leg"><div class="leg-dot ld-pre"></div>Вперёд</div>
+    </div>
+    <div class="sec-label" id="day-label">Понедельник</div>
+    <div class="slot-list" id="slot-list"></div>
+    <button class="add-btn" onclick="openAddSlot()">+ добавить занятие</button>
+  </div>
+
+  <div id="view-payments" class="view">
+    <div class="stats-grid">
+      <div class="stat"><div class="stat-label">Заработано</div><div class="stat-value sv-earned" id="s-earned">0 ₽</div></div>
+      <div class="stat"><div class="stat-label">Ожидается</div><div class="stat-value sv-pending" id="s-pending">0 ₽</div></div>
+      <div class="stat"><div class="stat-label">Учеников</div><div class="stat-value sv-neutral" id="s-total">0</div></div>
+      <div class="stat"><div class="stat-label">Оплатили</div><div class="stat-value sv-earned" id="s-paid-cnt">0</div></div>
+    </div>
+    <div class="sec-label">Статус оплат</div>
+    <div class="student-list" id="pay-list"></div>
+  </div>
+
+  <div id="view-students" class="view">
+    <div class="sec-label">Список учеников</div>
+    <div class="student-list" id="student-list"></div>
+    <button class="add-btn" onclick="openAddStudent()">+ добавить ученика</button>
+  </div>
+</div>
+
+<div class="modal-wrap" id="modal-add-student">
+  <div class="modal-overlay"><div class="modal">
+    <div class="modal-title">Новый ученик</div>
+    <div class="field"><label>Имя</label><input id="as-name" placeholder="Анна Петрова"/></div>
+    <div class="field"><label>Ставка за занятие, ₽</label><input id="as-rate" type="number" placeholder="1500"/></div>
+    <div class="field"><label>Занятий в месяц</label><input id="as-lessons" type="number" placeholder="8"/></div>
+    <div class="field"><label>Предмет</label><input id="as-subject" placeholder="Математика"/></div>
+    <div class="err" id="as-err"></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('modal-add-student')">Отмена</button>
+      <button class="btn btn-primary" onclick="addStudent()">Добавить</button>
+    </div>
+  </div></div>
+</div>
+
+<div class="modal-wrap" id="modal-add-slot">
+  <div class="modal-overlay"><div class="modal">
+    <div class="modal-title">Добавить занятие</div>
+    <div class="field"><label>Ученик</label><select id="slot-student"><option value="">— выберите —</option></select></div>
+    <div class="field"><label>Время начала</label><input id="slot-time" type="time" value="09:00"/></div>
+    <div class="field"><label>Длительность, мин</label><input id="slot-dur" type="number" value="60"/></div>
+    <div class="err" id="slot-err"></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('modal-add-slot')">Отмена</button>
+      <button class="btn btn-primary" onclick="addSlot()">Добавить</button>
+    </div>
+  </div></div>
+</div>
+
+<div class="modal-wrap" id="modal-pay">
+  <div class="modal-overlay"><div class="modal">
+    <div class="modal-title" id="pay-name">Ученик</div>
+    <div class="dr-list" id="pay-details"></div>
+    <div class="field"><label>Принять оплату, ₽</label>
+      <div class="pay-row"><input id="pay-amount" type="number" placeholder="Сумма"/><button class="btn btn-primary btn-sm" onclick="doPayment()">Принять</button></div>
+    </div>
+    <div class="err" id="pay-err"></div>
+    <div id="pay-history"></div>
+    <div class="modal-actions">
+      <button class="btn btn-danger btn-sm" onclick="deleteStudent()">Удалить</button>
+      <button class="btn" style="flex:1" onclick="closeModal('modal-pay')">Закрыть</button>
+    </div>
+  </div></div>
+</div>
+
+<div class="modal-wrap" id="modal-slot-detail">
+  <div class="modal-overlay"><div class="modal">
+    <div class="modal-title" id="sd-title">Занятие</div>
+    <div class="dr-list" id="sd-details"></div>
+    <div class="modal-actions">
+      <button class="btn btn-danger btn-sm" onclick="deleteSlot()">Удалить</button>
+      <button class="btn" style="flex:1" onclick="closeModal('modal-slot-detail')">Закрыть</button>
+    </div>
+  </div></div>
+</div>
+
+<script>
+const DAYS=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+const DAYS_F=['Понедельник','Вторник','Среда','Четверг','Пятница','Суббота','Воскресенье'];
+const MONTHS=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const KEY='teacher_app_v1';
+let data={students:[],schedule:{}};
+let curDay=0,curStudentId=null,curSlotId=null;
+
+function load(){try{const r=localStorage.getItem(KEY);if(r)data=JSON.parse(r);}catch(e){}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(data));}catch(e){}}
+function fmt(n){return Math.round(n).toLocaleString('ru-RU')+' ₽';}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2);}
+
+function getStatus(s){
+  const total=s.rate*s.lessons;
+  const paid=s.payments.reduce((a,p)=>a+p.amount,0);
+  if(paid>total)return'prepaid';
+  if(paid>=total)return'paid';
+  if(paid===0)return'unpaid';
+  return'partial';
+}
+
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',['schedule','payments','students'][i]===t));
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
+  document.getElementById('view-'+t).classList.add('active');
+  if(t==='payments')renderPayments();
+  if(t==='students')renderStudents();
+  if(t==='schedule')renderSchedule();
+}
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function calcEnd(time,dur){
+  const [h,m]=time.split(':').map(Number);
+  const t=h*60+m+Number(dur);
+  return String(Math.floor(t/60)%24).padStart(2,'0')+':'+String(t%60).padStart(2,'0');
+}
+
+function renderDayStrip(){
+  document.getElementById('day-strip').innerHTML=DAYS.map((d,i)=>{
+    const has=data.schedule[i]&&data.schedule[i].length>0;
+    const ac=i===curDay?'active':'';
+    const hc=has&&i!==curDay?'has':'';
+    return `<button class="day-btn ${ac} ${hc}" onclick="setDay(${i})">${d}</button>`;
+  }).join('');
+}
+function setDay(i){curDay=i;renderDayStrip();renderSlots();}
+
+function renderSlots(){
+  document.getElementById('day-label').textContent=DAYS_F[curDay];
+  const slots=(data.schedule[curDay]||[]).slice().sort((a,b)=>a.time.localeCompare(b.time));
+  const el=document.getElementById('slot-list');
+  if(!slots.length){el.innerHTML='<div class="empty">Занятий нет — добавьте первое</div>';return;}
+  const stLabel={'paid':'Оплачено','unpaid':'Не оплачено','prepaid':'Вперёд','partial':'Частично'};
+  el.innerHTML=slots.map(s=>{
+    const st=data.students.find(x=>x.id===s.studentId);
+    const name=st?st.name:'(удалён)';
+    const sub=st&&st.subject?st.subject:'';
+    const rate=st?fmt(st.rate):'—';
+    const end=calcEnd(s.time,s.duration);
+    const status=st?getStatus(st):'unpaid';
+    return `<div class="slot ${status}" onclick="openSlotDetail('${s.id}')">
+      <div class="slot-inner">
+        <div class="slot-time">${s.time}<span>${end}</span></div>
+        <div style="flex:1">
+          <div class="slot-name">${name}</div>
+          <div class="slot-meta">${sub?sub+' · ':''}${s.duration} мин</div>
+        </div>
+        <div class="slot-right">
+          <div class="slot-rate">${rate}</div>
+          <div class="slot-status">${stLabel[status]}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderSchedule(){renderDayStrip();renderSlots();}
+
+function openAddSlot(){
+  const sel=document.getElementById('slot-student');
+  sel.innerHTML='<option value="">— выберите —</option>'+data.students.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+  document.getElementById('slot-err').textContent='';
+  openModal('modal-add-slot');
+}
+function addSlot(){
+  const sid=document.getElementById('slot-student').value;
+  const time=document.getElementById('slot-time').value;
+  const dur=parseInt(document.getElementById('slot-dur').value);
+  const err=document.getElementById('slot-err');
+  if(!sid){err.textContent='Выберите ученика';return;}
+  if(!time){err.textContent='Укажите время';return;}
+  if(!dur||dur<1){err.textContent='Укажите длительность';return;}
+  err.textContent='';
+  if(!data.schedule[curDay])data.schedule[curDay]=[];
+  data.schedule[curDay].push({id:uid(),studentId:sid,time,duration:dur});
+  save();renderSchedule();closeModal('modal-add-slot');
+}
+
+function openSlotDetail(id){
+  const slot=Object.values(data.schedule).flat().find(s=>s.id===id);
+  if(!slot)return;
+  curSlotId=id;
+  const st=data.students.find(x=>x.id===slot.studentId);
+  document.getElementById('sd-title').textContent=st?st.name:'Занятие';
+  const status=st?getStatus(st):'unpaid';
+  const sLabel={'paid':'Оплачено','unpaid':'Не оплачено','prepaid':'Оплачено вперёд','partial':'Частично'}[status];
+  document.getElementById('sd-details').innerHTML=`
+    <div class="dr"><span class="dr-label">День</span><span class="dr-val">${DAYS_F[curDay]}</span></div>
+    <div class="dr"><span class="dr-label">Начало — конец</span><span class="dr-val">${slot.time} — ${calcEnd(slot.time,slot.duration)}</span></div>
+    <div class="dr"><span class="dr-label">Длительность</span><span class="dr-val">${slot.duration} мин</span></div>
+    <div class="dr"><span class="dr-label">Ставка</span><span class="dr-val">${st?fmt(st.rate):'—'}</span></div>
+    ${st&&st.subject?`<div class="dr"><span class="dr-label">Предмет</span><span class="dr-val">${st.subject}</span></div>`:''}
+    <div class="dr"><span class="dr-label">Статус оплаты</span><span class="dr-val">${sLabel}</span></div>
+  `;
+  openModal('modal-slot-detail');
+}
+function deleteSlot(){
+  if(!confirm('Удалить занятие?'))return;
+  if(data.schedule[curDay])data.schedule[curDay]=data.schedule[curDay].filter(s=>s.id!==curSlotId);
+  save();renderSchedule();closeModal('modal-slot-detail');
+}
+
+function scCard(s){
+  const st=getStatus(s);
+  const paid=s.payments.reduce((a,p)=>a+p.amount,0);
+  const total=s.rate*s.lessons;
+  const bCls={'paid':'b-paid','unpaid':'b-unpaid','prepaid':'b-prepaid','partial':'b-partial'}[st];
+  const bTxt={'paid':'✓ Оплачено','unpaid':'✗ Не оплачено','prepaid':'↑ Вперёд','partial':'~ Частично'}[st];
+  return `<div class="sc ${st}" onclick="openPay('${s.id}')">
+    <div class="sc-body">
+      <div class="sc-name">${s.name}</div>
+      <div class="sc-sub">${s.subject||'—'} · ${fmt(s.rate)}/занятие</div>
+    </div>
+    <div class="sc-right">
+      <div class="sc-badge ${bCls}">${bTxt}</div>
+      <div class="sc-amount">${fmt(paid)} / ${fmt(total)}</div>
+    </div>
+  </div>`;
+}
+
+function renderPayments(){
+  let earned=0,pending=0,paidC=0;
+  data.students.forEach(s=>{
+    const total=s.rate*s.lessons;
+    const paid=s.payments.reduce((a,p)=>a+p.amount,0);
+    earned+=paid;
+    if(paid<total)pending+=(total-paid);
+    const st=getStatus(s);if(st==='paid'||st==='prepaid')paidC++;
+  });
+  document.getElementById('s-earned').textContent=fmt(earned);
+  document.getElementById('s-pending').textContent=fmt(pending);
+  document.getElementById('s-total').textContent=data.students.length;
+  document.getElementById('s-paid-cnt').textContent=paidC;
+  const el=document.getElementById('pay-list');
+  el.innerHTML=data.students.length?data.students.map(scCard).join(''):'<div class="empty">Учеников нет</div>';
+}
+
+function openPay(id){
+  curStudentId=id;
+  const s=data.students.find(x=>x.id===id);
+  if(!s)return;
+  const total=s.rate*s.lessons;
+  const paid=s.payments.reduce((a,p)=>a+p.amount,0);
+  const rem=total-paid;
+  const st=getStatus(s);
+  document.getElementById('pay-name').textContent=s.name;
+  document.getElementById('pay-amount').value='';
+  document.getElementById('pay-err').textContent='';
+  const remClass=st==='prepaid'?'gold':rem<=0?'green':'red';
+  const remText=st==='prepaid'?`+${fmt(Math.abs(rem))} вперёд`:rem<=0?'✓ Полностью':fmt(rem);
+  document.getElementById('pay-details').innerHTML=`
+    <div class="dr"><span class="dr-label">Ставка</span><span class="dr-val">${fmt(s.rate)}</span></div>
+    <div class="dr"><span class="dr-label">Занятий в месяц</span><span class="dr-val">${s.lessons}</span></div>
+    <div class="dr"><span class="dr-label">Итого к оплате</span><span class="dr-val">${fmt(total)}</span></div>
+    <div class="dr"><span class="dr-label">Оплачено</span><span class="dr-val green">${fmt(paid)}</span></div>
+    <div class="dr"><span class="dr-label">Остаток</span><span class="dr-val ${remClass}">${remText}</span></div>
+  `;
+  const hist=document.getElementById('pay-history');
+  hist.innerHTML=s.payments.length?'<div class="hist-title">История оплат</div>'+
+    s.payments.slice().reverse().map(p=>`<div class="hist-item"><span class="hist-date">${p.date}</span><span class="hist-amt">+${fmt(p.amount)}</span></div>`).join(''):'';
+  openModal('modal-pay');
+}
+function doPayment(){
+  const amount=parseFloat(document.getElementById('pay-amount').value);
+  const err=document.getElementById('pay-err');
+  if(!amount||amount<=0){err.textContent='Введите сумму';return;}
+  err.textContent='';
+  const s=data.students.find(x=>x.id===curStudentId);
+  if(!s)return;
+  const d=new Date();
+  s.payments.push({amount,date:d.toLocaleDateString('ru-RU',{day:'numeric',month:'short'})});
+  save();openPay(curStudentId);renderPayments();renderSlots();
+}
+
+function renderStudents(){
+  const el=document.getElementById('student-list');
+  el.innerHTML=data.students.length?data.students.map(scCard).join(''):'<div class="empty">Добавьте первого ученика</div>';
+}
+function openAddStudent(){
+  ['as-name','as-rate','as-lessons','as-subject'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('as-err').textContent='';
+  openModal('modal-add-student');
+}
+function addStudent(){
+  const name=document.getElementById('as-name').value.trim();
+  const rate=parseFloat(document.getElementById('as-rate').value);
+  const lessons=parseInt(document.getElementById('as-lessons').value);
+  const subject=document.getElementById('as-subject').value.trim();
+  const err=document.getElementById('as-err');
+  if(!name){err.textContent='Введите имя';return;}
+  if(!rate||rate<=0){err.textContent='Введите ставку';return;}
+  if(!lessons||lessons<=0){err.textContent='Введите количество занятий';return;}
+  err.textContent='';
+  data.students.push({id:uid(),name,rate,lessons,subject,payments:[]});
+  save();renderStudents();closeModal('modal-add-student');
+}
+function deleteStudent(){
+  if(!confirm('Удалить ученика и все его данные?'))return;
+  data.students=data.students.filter(x=>x.id!==curStudentId);
+  Object.keys(data.schedule).forEach(d=>{data.schedule[d]=data.schedule[d].filter(s=>s.studentId!==curStudentId);});
+  save();renderStudents();renderPayments();renderSlots();closeModal('modal-pay');
+}
+
+const tod=new Date();
+curDay=tod.getDay()===0?6:tod.getDay()-1;
+document.getElementById('month-lbl').textContent=MONTHS[tod.getMonth()]+' '+tod.getFullYear();
+load();renderSchedule();
+</script>
